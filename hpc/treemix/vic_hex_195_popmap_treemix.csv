@@ -1,0 +1,196 @@
+ID,species,location,species_loc
+140217-A,victoriae,"Iselin Bank, Ross Sea",victoriae
+140217-B,victoriae,"Iselin Bank, Ross Sea",victoriae
+140217-C,victoriae,"Iselin Bank, Ross Sea",victoriae
+250,victoriae,Amundsen Sea,victoriae
+251,victoriae,Amundsen Sea,victoriae
+36968-A,victoriae,"C4, Western Ross Sea",victoriae
+36968-B,victoriae,"C4, Western Ross Sea",victoriae
+36968-C,victoriae,"C4, Western Ross Sea",victoriae
+36968-E,victoriae,"C4, Western Ross Sea",victoriae
+36968-F,victoriae,"C4, Western Ross Sea",victoriae
+37157-A,victoriae,"C15, Ross Sea",victoriae
+830,victoriae,Amundsen Sea,victoriae
+881-19,victoriae,Amundsen Sea,victoriae
+903,victoriae,Amundsen Sea,victoriae
+93825-B,victoriae,Ross Sea,victoriae
+93825-C,victoriae,Ross Sea,victoriae
+94825-A,victoriae,Ross Sea,victoriae
+94857-A,victoriae,Balleny Islands,victoriae
+94857-B,victoriae,Balleny Islands,victoriae
+94858-A,victoriae,Ross Sea,victoriae
+94866-A,victoriae,Ross Sea,victoriae
+94866-B,victoriae,Ross Sea,victoriae
+94869-A,victoriae,Ross Sea,victoriae
+94869-B,victoriae,Ross Sea,victoriae
+AAD141,victoriae,Prydz Bay,victoriae
+E5492A,victoriae,Bransfield Mouth,victoriae
+E5492B,victoriae,Bransfield Mouth,victoriae
+E5492C,victoriae,Bransfield Mouth,victoriae
+E5492D,victoriae,Bransfield Mouth,victoriae
+E5492E,victoriae,Bransfield Mouth,victoriae
+E5493A,hexactis,Bransfield Mouth,BM
+E5493B,hexactis,Bransfield Mouth,BM
+E5493C,hexactis,Bransfield Mouth,BM
+E5493D,hexactis,Bransfield Mouth,BM
+E5493E,hexactis,Bransfield Mouth,BM
+E5493F,hexactis,Bransfield Mouth,BM
+E5493G,hexactis,Bransfield Mouth,BM
+E5493H,hexactis,Bransfield Mouth,BM
+E5493I,hexactis,Bransfield Mouth,BM
+E5493J,hexactis,Bransfield Mouth,BM
+E5524A,victoriae,Bransfield Mouth,victoriae
+E5524B,victoriae,Bransfield Mouth,victoriae
+E5524C,victoriae,Bransfield Mouth,victoriae
+E5524D,victoriae,Bransfield Mouth,victoriae
+E5524E,victoriae,Bransfield Mouth,victoriae
+E6408,victoriae,South Georgia,victoriae
+E6420,victoriae,South Georgia,victoriae
+IE_2009_4672,victoriae,Adelie Land,victoriae
+IE_2009_4675,victoriae,Adelie Land,victoriae
+IE_2009_4676,victoriae,Adelie Land,victoriae
+IE_2009_4679,victoriae,Adelie Land,victoriae
+IE_2009_4687A,victoriae,Adelie Land,victoriae
+IE_2009_4690,victoriae,Adelie Land,victoriae
+IE_2009_4702,victoriae,Adelie Land,victoriae
+IE_2009_4703,victoriae,Adelie Land,victoriae
+IE_2009_4707,victoriae,Adelie Land,victoriae
+IE_2009_4713,victoriae,Adelie Land,victoriae
+IE_2009_4726,victoriae,Adelie Land,victoriae
+IE_2009_4731,victoriae,Adelie Land,victoriae
+IE_2009_4734,victoriae,Adelie Land,victoriae
+IE_2009_4753,victoriae,Adelie Land,victoriae
+IE_2009_4754,victoriae,Adelie Land,victoriae
+IE_2009_4763,victoriae,Adelie Land,victoriae
+IE_2009_4767,victoriae,Adelie Land,victoriae
+N0071,victoriae,C3 Western Ross Sea,victoriae
+N0072,victoriae,C3 Western Ross Sea,victoriae
+N0073,victoriae,C3 Western Ross Sea,victoriae
+N0074,victoriae,C3 Western Ross Sea,victoriae
+N0075,victoriae,C3 Western Ross Sea,victoriae
+N0078,victoriae,Balleny Islands,victoriae
+N0079,victoriae,Balleny Islands,victoriae
+N0080,victoriae,Balleny Islands,victoriae
+N0121,victoriae,C32 Scott A,victoriae
+N0122,victoriae,C32 Scott A,victoriae
+N0123,victoriae,C34 Scott Is,victoriae
+PDIVA-C,victoriae,McMurdo Ross Sea,victoriae
+PDIVA-D,victoriae,McMurdo Ross Sea,victoriae
+PDIVA-E,victoriae,McMurdo Ross Sea,victoriae
+PDIVA-G,victoriae,McMurdo Ross Sea,victoriae
+PDIVA-I,victoriae,McMurdo Ross Sea,victoriae
+PNG703,victoriae,"Tressler, Kerguelen",victoriae
+PNG708,victoriae,"Tressler, Kerguelen",victoriae
+PNG710,victoriae,"Tressler, Kerguelen",victoriae
+S0036A,hexactis,South Georgia,SG
+S0036B,hexactis,South Georgia,SG
+S0036C,hexactis,South Georgia,SG
+S0036D,hexactis,South Georgia,SG
+S0036E,hexactis,South Georgia,SG
+S0036F,hexactis,South Georgia,SG
+S0036G,hexactis,South Georgia,SG
+S0036H,hexactis,South Georgia,SG
+S0036I,hexactis,South Georgia,SG
+S0036J,hexactis,South Georgia,SG
+S0185,victoriae,South Sandwich Islands,victoriae
+S0460,victoriae,South Sandwich Islands,victoriae
+S0539-B,victoriae,South Sandwich Islands,victoriae
+S0539-D,victoriae,South Sandwich Islands,victoriae
+S0990A,victoriae,South Sandwich Islands,victoriae
+S0990C,victoriae,South Sandwich Islands,victoriae
+S1312H,victoriae,Elephant Island,victoriae
+S1312I,victoriae,Elephant Island,victoriae
+S3070,hexactis,Shag Rocks,SR
+S3533O,hexactis,Shag Rocks,SR
+S3753,hexactis,Shag Rocks,SR
+S3754,hexactis,Shag Rocks,SR
+S3755,hexactis,Shag Rocks,SR
+S3756,hexactis,Shag Rocks,SR
+S3757,hexactis,Shag Rocks,SR
+S3758,hexactis,Shag Rocks,SR
+S3759,hexactis,Shag Rocks,SR
+S3760,hexactis,Shag Rocks,SR
+S4306,victoriae,Discovery Bank,victoriae
+S4307,victoriae,Discovery Bank,victoriae
+S4308,victoriae,Discovery Bank,victoriae
+S4309,victoriae,Discovery Bank,victoriae
+S4310,victoriae,Discovery Bank,victoriae
+S4472K,victoriae,Herdman Bank,victoriae
+S4472L,victoriae,Herdman Bank,victoriae
+S4472M,victoriae,Herdman Bank,victoriae
+S4472N,victoriae,Herdman Bank,victoriae
+S4472O,victoriae,Herdman Bank,victoriae
+S5741-B,victoriae,Shetland Islands,victoriae
+S5741-C,victoriae,Shetland Islands,victoriae
+S5741-F,victoriae,Shetland Islands,victoriae
+S5742,victoriae,Shetland Islands,victoriae
+S5743,victoriae,Shetland Islands,victoriae
+S6316A,victoriae,Bransfield Strait,victoriae
+S6316B,victoriae,Bransfield Strait,victoriae
+S6338A,victoriae,Bransfield Strait,victoriae
+S6338B,victoriae,Bransfield Strait,victoriae
+S6741,victoriae,Elephant Island,victoriae
+S6743,victoriae,Elephant Island,victoriae
+S6760-A,victoriae,Bransfield Strait,victoriae
+S6760-B,victoriae,Bransfield Strait,victoriae
+S6775A,victoriae,Elephant Island,victoriae
+S6905A,victoriae,Bransfield Strait,victoriae
+S6905B,victoriae,Bransfield Strait,victoriae
+WAMZ43230,hexactis,Heard Island (Kerguelen Plateau),HI
+WAMZ43231,hexactis,Heard Island (Kerguelen Plateau),HI
+WAMZ43232,hexactis,Heard Island (Kerguelen Plateau),HI
+WAMZ43233,hexactis,Heard Island (Kerguelen Plateau),HI
+WAMZ43234,hexactis,Heard Island (Kerguelen Plateau),HI
+WAMZ43235,hexactis,Heard Island (Kerguelen Plateau),HI
+WAMZ43236,hexactis,Heard Island (Kerguelen Plateau),HI
+WAMZ43237,hexactis,Heard Island (Kerguelen Plateau),HI
+WAMZ43238,hexactis,Heard Island (Kerguelen Plateau),HI
+WAMZ43239,hexactis,Heard Island (Kerguelen Plateau),HI
+WAMZ444965,victoriae,Balleny Islands,victoriae
+WAMZ44590,victoriae,"Southern Thule, South Sandwich Islands",victoriae
+WAMZ44932,victoriae,"Southern Thule, South Sandwich Islands",victoriae
+WAMZ44948,victoriae,Bouvet Island,victoriae
+WAMZ44949,victoriae,Bouvet Island,victoriae
+WAMZ44950,victoriae,Bouvet Island,victoriae
+WAMZ44951,victoriae,Bouvet Island,victoriae
+WAMZ44953,victoriae,Bouvet Island,victoriae
+WAMZ44954,victoriae,Bouvet Island,victoriae
+WAMZ44955,victoriae,Bouvet Island,victoriae
+WAMZ44956,victoriae,Bouvet Island,victoriae
+WAMZ44957,victoriae,Bouvet Island,victoriae
+WAMZ44958,victoriae,Bouvet Island,victoriae
+WAMZ44962,victoriae,Balleny Islands,victoriae
+WAMZ44963,victoriae,Balleny Islands,victoriae
+WAMZ88554,victoriae,EWeddell Sea,victoriae
+WAMZ88555,victoriae,Larsen-Larsen B,victoriae
+WAMZ88556,victoriae,Larsen-Larsen C,victoriae
+WAMZ88558,victoriae,Larsen-Larsen A North,victoriae
+WAMZ88559,victoriae,EWeddell Sea,victoriae
+WAMZ88563,victoriae,Larsen- Larsen B,victoriae
+WAMZ88568,victoriae,Larsen-Larsen A North,victoriae
+WAMZ88570,victoriae,EWeddell Sea,victoriae
+WAMZ88571,victoriae,EWeddell Sea,victoriae
+WAMZ88572,victoriae,Larsen-Larsen B South,victoriae
+WAMZ88573,victoriae,Larsen-Larsen B South,victoriae
+WAMZ88574,victoriae,Larsen-Larsen B West,victoriae
+WAMZ88575,victoriae,Larsen-Larsen B West,victoriae
+WAMZ88576,victoriae,EWeddell Sea,victoriae
+WAMZ88577,victoriae,EWeddell Sea,victoriae
+WAMZ88578,victoriae,Larsen-Larsen B Seep 3 miles NW,victoriae
+WAMZ88579,victoriae,EWeddell Sea,victoriae
+WAMZ88583,victoriae,EWeddell Sea,victoriae
+WAMZ88584,victoriae,EWeddell Sea,victoriae
+WAMZ88585,victoriae,SWeddell Sea,victoriae
+WAMZ88586,victoriae,SWeddell Sea,victoriae
+WAMZ88587,victoriae,SWeddell Sea,victoriae
+WAMZ88588,victoriae,SWeddell Sea,victoriae
+WAMZ88590,victoriae,SWeddell Sea,victoriae
+WAMZ88591,victoriae,SWeddell Sea,victoriae
+WAMZ88592,victoriae,SWeddell Sea,victoriae
+WAMZ88593,victoriae,SWeddell Sea,victoriae
+WAMZ88594,victoriae,SWeddell Sea,victoriae
+WAMZ88595,victoriae,SWeddell Sea,victoriae
+WAMZ88596,victoriae,SWeddell Sea,victoriae
+WAMZ88597,victoriae,SWeddell Sea,victoriae
+WAMZ88598,victoriae,SWeddell Sea,victoriae
+WAMZ88599,victoriae,SWeddell Sea,victoriae

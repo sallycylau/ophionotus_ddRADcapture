@@ -1,0 +1,172 @@
+---
+title: "Target capture data: Reads processing, quality control and variant calling"
+output: github_document
+---
+
+Trim adapters:
+```{bash, error=TRUE, results='hide', eval = FALSE}
+#create a txt file containing barcodes information:
+nano barcodes.txt
+
+AAGTAAGT GAACCGGT WAMZ88586
+TGTTCTCC TGGTACTA WAMZ88587
+
+#demultiplex, remove barcodes and clean using Stacks/process_shortreads
+module load stacks
+
+in_path=./ophionotus/raw
+out_dir=./ophionotus/cleaned_processshortreads
+bar_code=./ophionotus/info/barcodes_1.txt
+log_file=$out_dir/process_shortreads.oe
+
+process_shortreads -P -p $in_path -o $out_dir -b $bar_code -r -c --index_index --adapter_1 AGATCGGAAGAGC --adapter_2 AGATCGGAAGAGC --adapter_mm 0 &> $log_file
+```
+
+Discard reads with phred quality (Q) less than 20, trim polyG (problem with early Novaseq):
+```{bash, error=TRUE, results='hide'}
+module load fastp
+
+for sample in `./ophionotus/cleaned_processshortreads/*.1.fq.gz`
+do
+in_dir=./ophionotus/cleaned_processshortreads
+out_dir=./ophionotus/cleaned_fastp
+base=$(basename $sample ".1.fq.gz")
+fastp -i ${in_dir}/${base}.1.fq.gz -I ${in_dir}/${base}.2.fq.gz  -o ${out_dir}/${base}.1.fq.gz -O ${out_dir}/${base}.2.fq.gz -q 20 --trim_poly_g
+done
+```
+
+Truncate final read length to a uniform length of 140 bp (that's the length the baits targeted):
+```{bash, error=TRUE, results='hide'}
+module load fastp
+
+for sample in `ls ./ophionotus/cleaned_fastp/*.1.fq.gz`
+do
+in_dir=./ophionotus/cleaned_fastp
+out_dir=/./ophionotus/cleaned_final
+base=$(basename $sample ".1.fq.gz")
+
+fastp -i ${in_dir}/${base}.1.fq.gz -I ${in_dir}/${base}.2.fq.gz  -o ${out_dir}/${base}.1.fq.gz -O ${out_dir}/${base}.2.fq.gz -l 140 --max_len1 140 --max_len2 140 -A -G -Q 
+
+done
+```
+
+Finally, check cleaned reads quality using fastqc:
+```{bash, error=TRUE, results='hide'}
+module load fastqc
+
+fastqc -o ./ophionotus/cleaned_final/fastqc ./ophionotus/cleaned_final/$sample.1.fq.gz ./ophionotus/cleaned_final/$sample.2.fq.gz
+```
+
+Screen for contaminants using kraken:
+```{bash, error=TRUE, results='hide'}
+module load kraken
+
+#list all sample IDs here
+samples="250
+251
+261
+297
+830
+etc"
+
+i=1
+for sample in $samples
+do
+   kraken --threads 12 --db ./miniKraken/minikraken_20171101_8GB_dustmasked --fastq-input --paired ./ophionotus/cleaned_final/${sample}.1.fq.gz ./ophionotus/cleaned_final/${sample}.2.fq.gz --gzip-compressed > ${sample}_initial.txt
+   let "i+=1";
+done
+```
+
+Map cleaned reads to consensus loci (fasta file used to generate target capture baits):
+```{bash, error=TRUE, results='hide'}
+module load bwa
+module load samtools
+
+REF=./reference_bwa/BrittleStar-input-seq-final.fas
+
+INDS=($(for i in ./ophionotus/cleaned_final/*.1.fq.gz; do echo $(basename ${i%.1*}); done))
+
+for IND in ${INDS[@]};
+do
+	# declare variables
+	FORWARD=./ophionotus/cleaned_final/${IND}.1.fq.gz
+	REVERSE=./ophionotus/cleaned_final/${IND}.2.fq.gz
+	OUTPUT=./ophionotus/tarcap_bwa_sorted_bam/${IND}_sort.bam
+
+	# then align and sort
+	echo "Aligning $IND with bwa"
+	bwa mem -M -t 15 $REF $FORWARD \
+	$REVERSE | samtools view -b -@ 15 | \
+	samtools sort -@ 15 -T ${IND} > $OUTPUT
+
+done
+```
+
+Run samtools flagstat for some sanity check:
+```{bash, error=TRUE, results='hide'}
+samtools flagstat ${sample}_sort.bam
+```
+
+Remove PCR duplicates using Picard:
+```{bash, error=TRUE, results='hide'}
+module load java
+module load picard
+
+for sample in `ls ./ophionotus/tarcap_bwa_sorted_bam/*.bam`
+do
+base=$(basename $sample ".bam")
+
+java -jar $PICARD_HOME/picard.jar MarkDuplicates \
+      I=./ophionotus/tarcap_bwa_sorted_bam/${base}.bam \
+      O=./ophionotus/tarcap_bwa_sorted_bam_pcrrm/${base}.bam \
+      REMOVE_DUPLICATES=true \
+      ASSUME_SORTED=true VALIDATION_STRINGENCY=SILENT \
+      MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=1000 \
+      M=./ophionotus/tarcap_bwa_sorted_bam_pcrrm/metrics_files/${base}.rmd.bam.metrics
+done
+```
+
+Rename bam file names and index bam files:
+```{bash, error=TRUE, results='hide'}
+cd ./ophionotus/tarcap_bwa_sorted_bam_pcrrm
+
+# rename
+for file in *_sort.bam
+do
+  mv "$file" "${file%_sort.bam}.bam"
+done
+
+# index
+samtools index *.bam
+```
+
+Call SNPs across samples using bcftools:
+```{bash, error=TRUE, results='hide'}
+module load bcftools
+module load samtools
+
+REF=./ophionotus/unique_consensus_samtools_fadix/BrittleStar-input-seq-final.fas
+
+cd ./ophionotus/tarcap_bwa_sorted_bam_pcrrm/
+bcftools mpileup --threads 15 -a AD,DP,SP -Ou -f $REF \
+1117-13.bam 1117-14.bam 1117-16.bam... WAMZ88599.bam | \
+bcftools call -f GQ,GP -mv -Oz -o ./ophionotus/SNPfiltering/ophionotus_raw.vcf.gz --threads 15
+```
+
+Check if we we have in the ophionotus_raw.vcf.gz:
+```{bash, error=TRUE, results='hide'}
+# missingness per site
+vcftools --gzvcf ophionotus_raw.vcf.gz --missing-site --out ./bcftools_mpileup/raw_vcf_stat
+# missingness per individual
+vcftools --gzvcf ophionotus_raw.vcf.gz --missing-indv --out ./bcftools_mpileup/raw_vcf_stat
+# allele frequency
+vcftools --gzvcf ophionotus_raw.vcf.gz --freq2 --out ./bcftools_mpileup/raw_vcf_stat
+# mean depth per individual
+vcftools --gzvcf ophionotus_raw.vcf.gz --depth --out ./bcftools_mpileup/raw_vcf_stat
+# mean depth per site
+vcftools --gzvcf ophionotus_raw.vcf.gz --site-mean-depth --out ./bcftools_mpileup/raw_vcf_stat
+# site quality
+vcftools --gzvcf ophionotus_raw.vcf.gz --site-quality --out ./bcftools_mpileup/raw_vcf_stat 
+# heterozygosity per individual
+vcftools --gzvcf ophionotus_raw.vcf.gz --het --out ./bcftools_mpileup/raw_vcf_stat
+```

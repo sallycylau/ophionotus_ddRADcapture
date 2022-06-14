@@ -1,0 +1,124 @@
+---
+title: "Stairwayplot"
+output: github_document
+---
+
+## Stairwayplot within O. victoirae
+Prepare StairwayPlot input files (folded SFS) using easySFS (https://github.com/isaacovercast/easySFS)  
+<br>
+Run an easySFS trial run to see if we need to downproject (i.e. downsample) the SFS  
+Whether or not you need to downproject your SFS depends on the amount of missing data you have. For more info on downprojection, see https://dadi.readthedocs.io/en/latest/user-guide/manipulating-spectra/  
+<br>
+Don't forget the number of samples is counted in haploids here, and we have diploid species  
+<br>
+Samples are separated by environments (deep, shelf, islands)
+```{bash, error=TRUE, results='hide'}
+./easySFS.py -i ./vic_allsps.vcf.recode.vcf -p ./vic_eco_popmap.txt --preview -v -a
+#Downproject to:
+#deep: n=18
+#shelf: n=92
+#island: n=80
+
+./easySFS.py -i ./vic_allsps.vcf.recode.vcf -p ./vic_eco_popmap.txt  --proj=18,92,80 -o ./easySFS/vic_eco --prefix vic_eco -f -v -a
+```
+
+Generate .blueprint file per population (input of stairwayplot)  
+<br>
+Here is an example of .blueprint for deep shelf population (vic_deep_fold.blueprint)  
+For other .blueprint files see ./hpc/stairwayplot folder
+```{bash, error=TRUE, results='hide'}
+#blueprint file for Ophionotus victoriae deep shelf (>1000m) population
+#input setting
+popid: vic_deep # id of the population (no white space)
+nseq: 18 # number of sequences (2 x sample size)
+L: 277760 # total number of observed nucleic sites, including polymorphic and monomorphic
+whether_folded: true # whethr the SFS is folded (true or false)
+SFS: 	2010.67479889075 884.8176568076246 524.1361559888038 361.6988622212846 267.1646631376399 186.9292464340453 114.1754207351595 55.45487861514302 18.08003379767789 # snp frequency spectrum: number of singleton, number of doubleton, etc. (separated by white space)
+smallest_size_of_SFS_bin_used_for_estimation: 1 # default is 1; to ignore singletons, uncomment this line and change this number to 2
+largest_size_of_SFS_bin_used_for_estimation: 9 # default is nseq/2 for folded SFS
+pct_training: 0.67 # percentage of sites for training
+nrand: 4	8	12	16 # number of random break points for each try (separated by white space). (nseq-2)/4, (nseq-2)/2, (nseq-2)*3/4, nseq-2
+project_dir: ./ophionotus/analyses/stairwayplot/vic_deep # project directory
+stairway_plot_dir: ./ophionotus/analyses/stairwayplot/stairway_plot_es # directory to the stairway plot files
+ninput: 200 # number of input files to be created for each estimation
+#random_seed: 6
+#output setting
+mu: 1.43e-8 # assumed mutation rate per site per generation
+year_per_generation: 9 # assumed generation time (in years)
+#plot setting
+plot_title: vic_deep_fold # title of the plot
+xrange: 0,0 # Time (1k year) range; format: xmin,xmax; "0,0" for default
+yrange: 0,0 # Ne (1k individual) range; format: xmin,xmax; "0,0" for default
+xspacing: 2 # X axis spacing
+yspacing: 2 # Y axis spacing
+fontsize: 11 # Font size
+```
+
+Run stairwayplot
+```{bash, error=TRUE, results='hide', eval=FALSE}
+module load java
+
+java -cp ./ophionotus/analyses/stairwayplot/stairway_plot_es Stairbuilder vic_deep_fold.blueprint #this generates vic_deep_fold.blueprint.sh
+
+bash vic_deep_fold.blueprint.sh
+```
+
+Then plot results using ggplot2 for better visualisation
+
+
+## Stairwayplot within O. hexactis
+Prepare StairwayPlot input files (folded SFS) using easySFS
+<br>
+Samples are separated by locations (1. BM: Bransfield Mouth, 2. Others: rest of locations)
+```{bash, error=TRUE, results='hide'}
+./easySFS.py -i ./hex_allsps.vcf.recode.vcf -p ./hex_popmap.txt --preview -v -a
+#Downproject to:
+#BM: n=14
+#others: n=40
+
+./easySFS.py -i ./hex_allsps.vcf.recode.vcf -p ./hex_popmap.txt  --proj=14,40 -o ./easySFS/hex_loc --prefix hex_loc -f -v -a
+
+```
+
+Generate .blueprint file per population (input of stairwayplot)  
+<br>
+Here is an example of .blueprint for Bransfield Mouth population (hex_BM_fold.blueprint)  
+For other .blueprint files see assocaited folder
+```{bash, error=TRUE, results='hide'}
+#blueprint file for Ophionotus hexactis BM
+#input setting
+popid: hex_BM # id of the population (no white space)
+nseq: 14 # number of sequences (haploid)
+L: 345660 # total number of observed nucleic sites, including polymorphic and monomorphic
+whether_folded: true # whethr the SFS is folded (true or false)
+SFS: 	2600.698993808063 1276.458488132103 784.3659270725855 525.3555899552813 307.1388028895777 173.4975232198141 54.27182662538704 # snp frequency spectrum: number of singleton, number of doubleton, etc. (separated by white space)
+smallest_size_of_SFS_bin_used_for_estimation: 1 # default is 1; to ignore singletons, uncomment this line and change this number to 2
+largest_size_of_SFS_bin_used_for_estimation: 7 # default is nseq/2 for folded SFS
+pct_training: 0.67 # percentage of sites for training
+nrand: 3	6	9	12 # number of random break points for each try (separated by white space). (nseq-2)/4, (nseq-2)/2, (nseq-2)*3/4, nseq-2
+project_dir: ./ophionotus/analyses/stairwayplot/hex_BM # project directory
+stairway_plot_dir: ./ophionotus/analyses/stairwayplot/stairway_plot_es # directory to the stairway plot files
+ninput: 200 # number of input files to be created for each estimation
+#random_seed: 6
+#output setting
+mu: 1.43e-8 # assumed mutation rate per site per generation
+year_per_generation: 9 # assumed generation time (in years)
+#plot setting
+plot_title: hex_BM_fold # title of the plot
+xrange: 0,0 # Time (1k year) range; format: xmin,xmax; "0,0" for default
+yrange: 0,0 # Ne (1k individual) range; format: xmin,xmax; "0,0" for default
+xspacing: 2 # X axis spacing
+yspacing: 2 # Y axis spacing
+fontsize: 11 # Font size
+```
+
+Run stairwayplot
+```{bash, error=TRUE, results='hide', eval=FALSE}
+module load java
+
+java -cp ./ophionotus/analyses/stairwayplot/stairway_plot_es Stairbuilder hex_BM_fold.blueprint #this generates hex_BM_fold.blueprint.sh
+
+bash hex_BM_fold.blueprint.sh
+```
+
+Then plot results using ggplot2 for better visualisation

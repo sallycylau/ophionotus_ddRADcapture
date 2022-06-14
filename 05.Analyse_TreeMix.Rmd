@@ -1,0 +1,157 @@
+---
+title: "TreeMix"
+output: github_document
+---
+
+Convert vcf file to treemix input 
+
+```{r, eval=F, echo=T}
+library(adegenet)
+library(vcfR)
+library(dartR)
+
+setwd("./ophionotus/analyse/treemix")
+
+##Treemix for O. victoriae with O. hexactis as outgroup
+setwd("./ophionotus/analyses/treemix")
+
+#vcf to genlight
+vcf <- read.vcfR("./vic_hex_thin140.vcf.recode.vcf")
+oph_genlight <- vcfR2genlight(vcf)
+oph_genlight@pop
+
+#export ind.names on genlight as species
+ID_list <- as.data.frame(oph_genlight@ind.names)
+
+write.csv(ID_list, file="vic_hex_popmap.csv")
+
+#Make sure the order of the oph_genlight@ind.names is the same as the order of the IDs in popmap
+#Here we are analysing O. victoriae with samples separated by their admixture proportion (from structure)/localities using TreeMix
+#Label O. hexactis samples as outgroup
+pops_species <- read.csv('vic_struc_hex_popmap_treemix.csv', header=TRUE)
+
+strata(oph_genlight) <- pops_species
+setPop(oph_genlight) <- ~species_stru
+
+oph_genlight@ind.names
+oph_genlight@pop
+
+gl2treemix(
+  oph_genlight,
+  outfile = "vic.treemix_input.gz",
+  outpath = getwd()
+)
+
+
+##Treemix for O. hexactis with O. victoriae as outgroup
+setwd("./ophionotus/analyses/treemix")
+
+#vcf to genlight
+vcf <- read.vcfR("./vic_hex_thin140.vcf.recode.vcf")
+oph_genlight <- vcfR2genlight(vcf)
+oph_genlight@pop
+
+#export ind.names on genlight as species
+ID_list <- as.data.frame(oph_genlight@ind.names)
+
+write.csv(ID_list, file="vic_hex_popmap.csv")
+
+#Make sure the order of the oph_genlight@ind.names is the same as the order of the IDs in popmap
+#Here we are analysing O. hexactis with samples separated by localities using TreeMix
+#Label O. victoriae samples as outgroup
+pops_species <- read.csv('hex_popmap_treemix.csv', header=TRUE)
+
+strata(oph_genlight) <- pops_species
+setPop(oph_genlight) <- ~species_loc
+
+oph_genlight@ind.names
+oph_genlight@pop
+
+gl2treemix(
+  oph_genlight,
+  outfile = "hex.treemix_input.gz",
+  outpath = getwd()
+)
+```
+
+Run TreeMix on hpc
+```{bash, error=TRUE, results='hide'}
+cd ./ophionotus/analyses/treemix
+
+#O. vicotirae and O. hexactis - do 10 reps for m (migration edge) = 0-10
+
+$FILE=vic #for O. victoriae
+$FILE=hex #for O. hexactis
+
+for i in {1..10}
+do
+ treemix -i $FILE.treemix_input.gz -m 0 -o $FILE.$i.0 -bootstrap -k 1 -noss -se > treemix_${i}.0_log &
+done
+
+
+#calculate f/3 and f/4 statistics
+
+threepop -i $FILE.treemix_input.gz -k 1 > $FILE.f3_statistics.txt
+
+fourpop -i $FILE.treemix.frq.gz -k 1 > $FILE.f4_statistics.txt
+```
+
+Plot TreeMix runs
+```{r, eval=F, echo=T}
+##Plot Treemix runs (O. victoriae)
+library(RColorBrewer)
+library(R.utils)
+source("./ophionotus/analyses/treemix/plotting_funcs.R")
+
+#go to run_1 to get total explained variance
+setwd("./ophionotus/analyses/treemix/vic")
+
+#Post hoc analysis
+library(OptM)
+test.linear = optM('./ophionotus/analyses/treemix/vic', method = "linear")
+plot_optM(test.linear, method = "linear")
+
+#get total explained variance 
+get_f("vic.1.1")
+get_f("vic.2.1")
+
+#Plot 10 runs of treemix side-by-side:
+par(mfrow=c(2,3))
+for(edge in 1:10){
+  plot_tree(cex=0.8,paste0("vic.",edge,".1"))
+  title(paste(edge,"edges"))
+}
+
+#Plot tree and residual plot
+plot_tree("vic.1.1")
+plot_resid("vic.1.1", 
+           "pop.list.txt")
+
+
+##Plot Treemix runs (O. hexactis)
+
+#go to run_1 to get total explained variance
+setwd("./ophionotus/analyses/treemix/hex")
+
+#Post hoc analysis
+test.linear = optM('./ophionotus/analyses/treemix/hex', method = "linear")
+plot_optM(test.linear, method = "linear")
+
+#get total explained variance 
+get_f("hex.1.0")
+get_f("hex.2.0")
+
+#Plot 10 runs of treemix side-by-side:
+par(mfrow=c(2,3))
+for(edge in 1:10){
+  plot_tree(cex=0.8,paste0("hex.",edge,".0"))
+  title(paste(edge,"edges"))
+}
+
+#Plot tree and residual plot
+plot_tree("hex.1.0")
+plot_resid("hex.1.0", 
+           "pop.list.txt")
+```
+
+

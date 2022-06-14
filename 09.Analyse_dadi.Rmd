@@ -1,0 +1,83 @@
+---
+title: "Dmographic modelling between O. victoirae and O. hexactis using dadi"
+output: github_document
+---
+
+Prepare dadi input files (folded SFS) using easySFS
+https://github.com/isaacovercast/easySFS  
+<br>
+Run an easySFS trial run to see if we need to downproject (i.e. downsample) the SFS  
+<br>
+Whether or not you need to downproject your SFS depends on the amount of missing data you have. For more info on downprojection, see https://dadi.readthedocs.io/en/latest/user-guide/manipulating-spectra/  
+<br>
+Don't forget the number of samples is counted in haploids here, and we have diploid species  
+<br>
+Samples are separated by species (don't forget we removed O. victoriae from South Georgia and O. hexactis from Bransfield Mouth)
+```{bash, error=TRUE, results='hide'}
+./easySFS.py -i ./vic_hex_rmSGvix_BMhex.vcf.recode.vcf -p ./vic_hex_rmSGvix_BMhex_popmap.txt --preview -a
+#Downproject to:
+#O. vic: n=144
+#O. hex: n=32
+
+./easySFS.py -i ./vic_hex_rmSGvix_BMhex.vcf.recode.vcf -p ./vic_hex_rmSGvix_BMhex_popmap.txt -a --proj=144,32 -o ./vic_hex --prefix vic_hex -f -v
+```
+
+Visualise sfs
+```{bash, error=TRUE, results='hide'}
+ipython
+
+import dadi
+import pylab
+
+cd ./ophionotus/analyses/dadi/
+
+#2d-SFS
+fs = dadi.Spectrum.from_file("./ophionotus/analyses/dadi/victoriae-hexactis.sfs")
+dadi.Plotting.plot_single_2d_sfs(fs, vmin = 0.05)
+pylab.show()
+
+#1d-SFS of O. victoriae
+fs = dadi.Spectrum.from_file("./ophionotus/analyses/dadi/victoriae-144.sfs")
+dadi.Plotting.plot_1d_fs(fs, show=True)
+
+#1d-SFS of O. hexactis
+fs = dadi.Spectrum.from_file("./ophionotus/analyses/dadi/hexactis-32.sfs")
+dadi.Plotting.plot_1d_fs(fs, show=True)
+```
+
+## Running dadi
+Here we use dportik/dadi_pipeline: https://github.com/dportik/dadi_pipeline
+<br>
+See ./hpc/dadi folder for dadi_Run_2D_Set.py, Models_2D.py and Optimize_Functions.py  
+Make sure all .py scripts are located in the same folder that we will run dadi out of  
+<br>
+
+**Illustrations of models that were tested in dadi**  
+
+![img](figures/dadi_9models.png)
+
+Running dadi on Terminal (do 1 job per model to speed things up)
+```{bash, error=TRUE, results='hide'}
+module load cuda/11.3.0
+module load anaconda
+source activate ./.conda/envs/dadi
+
+cd ./ophionotus/analyses/dadi/SI
+
+python dadi_Run_2D_Set.py
+```
+
+## Generate bootstrapped SFS and calculate parameter uncertainty of the best model
+Here we use dadi-cli: https://github.com/xin-huang/dadi-cli
+```{bash, error=TRUE, results='hide'}
+cd ./ophionotus/analyses/dadi_cli
+
+dadi-cli GenerateFs --vcf vic_hex_rmSGvix_BMhex.vcf.recode.vcf.gz --pop-info vic_hex_rmSGvix_BMhex_popmap.txt --pop-ids victoriae hexactis --projections 144 32 --bootstrap 100 --chunk-size 140 --output ./ophionotus/analyses/dadi_cli/bs/vitoriae_hexactis_rmSGvix_BMhex.bootstrapping
+```
+
+Calculate parameter uncertainties of the best model (IM)
+```{bash, error=TRUE, results='hide'}
+cd ./ophionotus/analyses/dadi_cli
+
+python GIM_uncert_IM.py
+```

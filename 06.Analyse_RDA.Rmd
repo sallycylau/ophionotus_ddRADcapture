@@ -1,0 +1,433 @@
+---
+title: "Environmental association analyses (RDA)"
+output: github_document
+---
+
+## Redundancy anaylsis (RDA) between O. victoriae and O. hexactis
+See tutorial at https://popgen.nescent.org/2018-03-27_RDA_GEA.html
+
+```{r, eval=F, echo=T}
+library(psych)
+library(vegan)
+library(vcfR)
+library(adegenet)
+library(dartR)
+
+setwd("./ophionotus/analyse/RDA")
+
+#Read in genotype file
+#genotype file was generated from from -012 in vcftools
+#combine vic_hex_thin140_geno.012 , vic_hex_thin140_geno.012.indv, vic_hex_thin140_geno.012.pos into a csv file & replace -1 with NA
+geno_vic_hex <- read.csv("./vic_hex_thin140_geno.csv", header=TRUE, row.names=1) 
+
+#Check structure of the genotype file
+str(geno_vic_hex_195)
+dim(geno_vic_hex_195)
+
+#RDA requires complete data frames (i.e., no missing data). Impute using the most common genotype at each SNP across all individuals.
+sum(is.na(geno_vic_hex)) # 82980
+
+geno_vic_hex.imp <- apply(geno_vic_hex, 2, function(x) replace(x, is.na(x), as.numeric(names(which.max(table(x))))))
+sum(is.na(geno_vic_hex.imp)) # No NAs
+
+#Read in and screen the environmental factors
+env <- read.csv("./vic_hex_RDA_env_data.csv")
+str(env) # Look at the structure of the data frame
+
+#Make individual names characters (not factors)
+env$ID <- as.character(env$ID)
+
+#Confirm that genotypes and environmental data are in the same order
+identical(rownames(geno_vic_hex.imp), env[,1])
+#[1] TRUE
+
+as.list(rownames(geno_vic_hex.imp))
+as.list.data.frame(env[,1])
+
+dim(env)
+
+png("./env_cor_panels_all.png", width=50, height=50, units="cm", res=155, pointsize = 26)
+pairs.panels(env[,4:12], scale=T)
+dev.off()
+
+pred <- env[,5:10] # keep long, depth, salinity_bottom, temp_bottom, salinity_surface,	temp_surface for RDA
+
+# Run the RDA
+oph.rda <- rda(geno_vic_hex.imp ~ ., data=pred, scale=T)
+oph.rda
+
+RsquareAdj(oph.rda)
+
+summary(eigenvals(oph.rda, model = "constrained"))
+
+screeplot(oph.rda) #first RDA axis explains most of the variance
+
+#Check our RDA model for significance using formal tests
+signif.full <- anova.cca(oph.rda, parallel=getOption("mc.cores")) # default is permutation=999
+signif.full 
+
+signif.axis <- anova.cca(oph.rda, by="axis", parallel=getOption("mc.cores"))
+signif.axis
+
+vif.cca(oph.rda)
+
+#Plot the RDA 
+#Red = snps, indv = black circles, value vectors = env predictors
+#Relative arrangement of these items in the ordination space reflects their relationship with the ordination axes, which are linear combinations of the predictor variables
+plot(oph.rda, scaling=3) # default is axes 1 and 2
+plot(oph.rda, choices = c(1, 3), scaling=3) # axes 1 and 3
+
+#Define levels by species
+levels(env$species) <- c("hex", "vic")
+spe <- env$species
+bg <- c("#ff7f00","#1f78b4")
+
+#Plot RDA by axis 1 & 2 
+plot(oph.rda, type="n", scaling=3, family="sans", cex=0.75) 
+points(oph.rda, display="species", pch=20, cex=0.7, col="gray32", scaling=3) # the SNPs 
+points(oph.rda, display="sites", pch=21, cex=1.3, col="gray32", scaling=3, bg=bg[spe]) #include vic & hex
+text(oph.rda, scaling=3, display="bp", col="black", cex=0.7, family="sans") # the predictors
+legend("bottomright", legend=levels(spe), bty="n", col="gray32", pch=21, cex=0.75, pt.bg=bg)
+
+
+##Identify candidate SNPs involved in local adaptation
+load.rda <- scores(oph.rda, choices=c(1:3), display="species") # Species scores for the first (only significant) constrained axes
+
+hist(load.rda[,1], main="Loadings on RDA1")
+hist(load.rda[,2], main="Loadings on RDA2")
+hist(load.rda[,3], main="Loadings on RDA3") 
+
+#define the function here as outliers, where x is the vector of loadings and z is the number of standard deviations to use:
+outliers <- function(x,z){
+  lims <- mean(x) + c(-1, 1) * z * sd(x) # find loadings +/-z sd from mean loading     
+  x[x < lims[1] | x > lims[2]] # locus names in these tails
+}
+
+#Apply function to each significant constrained axis:
+cand1 <- outliers(load.rda[,1],3) # 32
+cand2 <- outliers(load.rda[,2],3) # 15
+cand3 <- outliers(load.rda[,3],3) # 15
+
+ncand <- length(cand1) + length(cand2) + length(cand3)
+ncand # 62 candidates on axis 1,2,3
+
+#Organise results by making one data frame with the axis, SNP name, loading, & correlation with each predictor:
+
+cand1 <- cbind.data.frame(rep(1,times=length(cand1)), names(cand1), unname(cand1))
+cand2 <- cbind.data.frame(rep(2,times=length(cand2)), names(cand2), unname(cand2))
+cand3 <- cbind.data.frame(rep(3,times=length(cand3)), names(cand3), unname(cand3))
+
+colnames(cand1) <- colnames(cand2) <- colnames(cand3) <- c("axis","snp","loading")
+
+cand <- rbind(cand1, cand2, cand3)
+cand$snp <- as.character(cand$snp)
+
+#Add in the correlations of each candidate SNP with the six environmental predictors
+foo <- matrix(nrow=(ncand), ncol=6) # 6 columns for 6 predictors
+colnames(foo) <- c("long","depth","sal_bottom","temp_bottom","sal_surface","temp_surface")
+
+for (i in 1:length(cand$snp)) {
+  nam <- cand[i,2]
+  snp.gen <- geno_vic_hex_195.imp[,nam]
+  foo[i,] <- apply(pred,2,function(x) cor(x,snp.gen))
+}
+
+cand <- cbind.data.frame(cand,foo)  
+head(cand)
+
+#Now we have a data frame of the candidate SNPs and their correlation with our 6 environmental predictors.
+
+#Investigate the candidates
+#First remove duplicate detections (i.e. SNPs that are identified as candidates on more than one RDA axis)
+length(cand$snp[duplicated(cand$snp)])  # 0 duplicate detections
+
+foo <- cbind(cand$axis, duplicated(cand$snp)) 
+table(foo[foo[,1]==1,2]) # 0 duplicates on axis 1
+table(foo[foo[,1]==2,2]) #  0 duplicates on axis 2
+table(foo[foo[,1]==3,2]) # 0 duplicates on axis 3
+cand <- cand[!duplicated(cand$snp),] # remove duplicate detections if there is any
+
+#See which of the predictors each candidate SNP is most strongly correlated with:
+for (i in 1:length(cand$snp)) {
+  bar <- cand[i,]
+  cand[i,9] <- names(which.max(abs(bar[4:8]))) # gives the variable
+  cand[i,10] <- max(abs(bar[4:8])) # gives the correlation
+}
+
+colnames(cand)[9] <- "predictor"
+colnames(cand)[10] <- "correlation"
+
+table(cand$predictor) 
+
+write.csv(cand, file="vic_hex_outlier_cand.csv")
+```
+
+## Redundancy anaylsis within O. victoriae
+```{r, eval=F, echo=T}
+#Read in genotype file
+geno_vic <- read.csv("./vic_geno.csv", header=TRUE, row.names=1) 
+
+str(geno_vic)
+dim(geno_vic)
+
+sum(is.na(geno_vic)) # 64370
+
+geno_vic.imp <- apply(geno_vic, 2, function(x) replace(x, is.na(x), as.numeric(names(which.max(table(x))))))
+sum(is.na(geno_vic.imp)) # No NAs
+
+#Read in and screen the environmental factors
+vic_env <- read.csv("./vic_RDA_env_data.csv")
+str(vic_env) # Look at the structure of the data frame
+
+vic_env$ID <- as.character(vic_env$ID)
+
+identical(rownames(geno_vic.imp), vic_env[,1])
+
+as.list(rownames(geno_vic.imp))
+as.list.data.frame(vic_env[,1])
+
+dim(vic_env)
+
+png("./env_cor_panels_all_vic.png", width=50, height=50, units="cm",res=155,pointsize = 26)
+pairs.panels(vic_env[,5:12], scale=T)
+dev.off()
+
+vic_pred <- vic_env[,5:10] # keep long, depth, salinity_bottom, temp_bottom, salinity_surface,	temp_surface for RDA
+
+# Run the RDA
+vic.rda <- rda(geno_vic.imp ~ ., data=vic_pred, scale=T)
+vic.rda
+
+RsquareAdj(vic.rda)
+
+summary(eigenvals(vic.rda, model = "constrained"))
+
+screeplot(vic.rda) #first RDA explain mosts of the variance
+
+#Check our RDA model for significance using formal tests
+signif.full <- anova.cca(vic.rda, parallel=getOption("mc.cores")) # default is permutation=999
+signif.full 
+
+signif.axis <- anova.cca(vic.rda, by="axis", parallel=getOption("mc.cores"))
+signif.axis
+
+vif.cca(vic.rda)
+
+#Plot the RDA 
+#Red = snps, indv = black circles, value vectors = env predictors
+#Relative arrangement of these items in the ordination space reflects their relationship with the ordination axes, which are linear combinations of the predictor variables
+plot(vic.rda, scaling=3) # default is axes 1 and 2
+plot(vic.rda, choices = c(1, 3), scaling=3) # axes 1 and 3
+
+#Define levels by environment (here is labelled as ecotype)
+levels(vic_env) <- c("deep", "shelf", "island")
+vic_eco <- vic_env$ecotype
+bg <- c("#1f78b4", "#a6cee3","#ff7f00")
+
+#Plot RDA by axis 1 & 2 
+plot(vic.rda, type="n", scaling=3, cex=0.75, family = "sans")
+points(vic.rda, display="species", pch=20, cex=0.7, col="gray32", scaling=3) # the SNPs
+points(vic.rda, display="sites", pch=21, cex=1.3, col="gray32", scaling=3, bg=bg[vic_eco]) # the shelf, deep, island
+text(vic.rda, scaling=3, display="bp", col="black", cex=0.7, family = "sans") # the predictors
+legend("bottomright", legend=levels(vic_eco), bty="n", col="gray32", pch=21, cex=0.75, pt.bg=bg)
+
+
+#Identify candidate SNPs involved in local adaptation
+vic_load.rda <- scores(vic.rda, choices=c(1:2), display="species") # Species scores for the first (only significant) constrained axes
+
+hist(vic_load.rda[,1], main="Loadings on RDA1")
+hist(vic_load.rda[,2], main="Loadings on RDA2")
+
+#define the function here as outliers, where x is the vector of loadings and z is the number of standard deviations to use:
+outliers <- function(x,z){
+  lims <- mean(x) + c(-1, 1) * z * sd(x) # find loadings +/-z sd from mean loading     
+  x[x < lims[1] | x > lims[2]] # locus names in these tails
+}
+
+#Apply function to each significant constrained axis:
+vic_cand1 <- outliers(vic_load.rda[,1],3) # 13
+vic_cand2 <- outliers(vic_load.rda[,2],3) # 15
+
+vic_ncand <- length(vic_cand1) + length(vic_cand2)
+vic_ncand # 28 candidates on axis 1,2
+
+vic_cand1 <- cbind.data.frame(rep(1,times=length(vic_cand1)), names(vic_cand1), unname(vic_cand1))
+vic_cand2 <- cbind.data.frame(rep(2,times=length(vic_cand2)), names(vic_cand2), unname(vic_cand2))
+
+colnames(vic_cand1) <- colnames(vic_cand2) <- c("axis","snp","loading")
+
+vic_cand <- rbind(vic_cand1, vic_cand2)
+vic_cand$snp <- as.character(vic_cand$snp)
+
+#Add in the correlations of each candidate SNP with the six environmental predictors
+foo <- matrix(nrow=(vic_ncand), ncol=6)  # 6 columns for 6 predictors
+colnames(foo) <- c("long","depth","sal_bottom","temp_bottom","sal_surface","temp_surface")
+
+for (i in 1:length(vic_cand$snp)) {
+  nam <- vic_cand[i,2]
+  snp.gen <- geno_vic_158.imp[,nam]
+  foo[i,] <- apply(vic_pred,2,function(x) cor(x,snp.gen))
+}
+
+vic_cand <- cbind.data.frame(vic_cand,foo)  
+head(vic_cand)
+
+#Investigate the candidates
+length(cand$snp[duplicated(vic_cand$snp)])  # 2 duplicate detections
+
+foo <- cbind(vic_cand$axis, duplicated(vic_cand$snp)) 
+table(foo[foo[,1]==1,2]) # no duplicates on axis 1
+table(foo[foo[,1]==2,2]) #  2 duplicates on axis 2
+vic_cand <- vic_cand[!duplicated(vic_cand$snp),] # remove duplicate detections
+
+#See which of the predictors each candidate SNP is most strongly correlated with:
+for (i in 1:length(vic_cand$snp)) {
+  bar <- vic_cand[i,]
+  vic_cand[i,10] <- names(which.max(abs(bar[4:9]))) # gives the variable
+  vic_cand[i,11] <- max(abs(bar[4:9]))              # gives the correlation
+}
+
+colnames(vic_cand)[10] <- "predictor"
+colnames(vic_cand)[11] <- "correlation"
+
+table(vic_cand$predictor) 
+
+write.csv(cand, file="vic_outlier_cand.csv")
+```
+
+## Redundancy anaylsis within O. hexactis
+```{r, eval=F, echo=T}
+#Read in genotype file
+geno_hex <- read.csv("./hex_geno.csv", header=TRUE, row.names=1) 
+
+str(geno_hex)
+dim(geno_hex)
+
+sum(is.na(geno_hex)) # 14473
+
+geno_hex.imp <- apply(geno_hex, 2, function(x) replace(x, is.na(x), as.numeric(names(which.max(table(x))))))
+sum(is.na(geno_hex.imp)) # No NAs
+
+#Read in and screen the environmental factors
+hex_env <- read.csv("./hex_RDA_env_data.csv")
+str(hex_env) # Look at the structure of the data frame
+
+hex_env$ID <- as.character(hex_env$ID)
+
+identical(rownames(hex_env.imp), hex_env[,1])
+
+as.list(rownames(hex_env.imp))
+as.list.data.frame(hex_env[,1])
+
+dim(hex_env)
+
+png("./env_cor_panels_all_hex.png", width=50, height=50, units="cm",res=155,pointsize = 26)
+pairs.panels(hex_env[,7:9], scale=T)
+dev.off()
+
+hex_pred <- hex_env[,7:9] # keep depth, salinity_bottom, temp_bottom for RDA
+
+# Run the RDA
+hex.rda <- rda(geno_hex.imp ~ ., data=hex_pred, scale=T)
+hex.rda
+
+RsquareAdj(hex.rda)
+
+summary(eigenvals(hex.rda, model = "constrained"))
+
+screeplot(hex.rda) #first RDA explain mosts of the variance
+
+#Check our RDA model for significance using formal tests
+signif.full <- anova.cca(hex.rda, parallel=getOption("mc.cores")) # default is permutation=999
+signif.full 
+
+signif.axis <- anova.cca(hex.rda, by="axis", parallel=getOption("mc.cores"))
+signif.axis
+
+vif.cca(hex.rda)
+
+#Plot the RDA 
+#Red = snps, indv = black circles, value vectors = env predictors
+#Relative arrangement of these items in the ordination space reflects their relationship with the ordination axes, which are linear combinations of the predictor variables
+plot(hex.rda, scaling=3) # default is axes 1 and 2
+plot(hex.rda, choices = c(1, 3), scaling=3) # axes 1 and 3
+
+#Define levels by locations (here is labelled as ecotype)
+levels(hex_env$ecotype) <- c("bransfield_mouth", "heard_is", "shag_rocks", "south_georgia")
+hex_eco <- hex_env$ecotype
+bg <- c("#ff7f00","#1f78b4","#ffff33", "#a6cee3")
+
+#Plot RDA by axis 1 & 2 
+plot(hex.rda, type="n", scaling=3, cex=0.75, family = "sans")
+points(hex.rda, display="species", pch=20, cex=0.75, col="gray32", scaling=3) # the SNPs
+points(hex.rda, display="sites", pch=21, cex=1.3, col="gray32", scaling=3, bg=bg[hex_eco]) # the shelf, deep, island
+text(hex.rda, scaling=3, display="bp", col="black", cex=0.7, family = "sans") # the predictors
+legend("topleft", legend=levels(hex_eco), bty="n", col="gray32", pch=21, cex=0.74, pt.bg=bg)
+
+#Identify candidate SNPs involved in local adaptation
+hex_load.rda <- scores(hex.rda, choices=c(1:3), display="species") 
+
+hist(hex_load.rda[,1], main="Loadings on RDA1")
+hist(hex_load.rda[,2], main="Loadings on RDA2")
+hist(hex_load.rda[,3], main="Loadings on RDA3")
+
+#define the function here as outliers, where x is the vector of loadings and z is the number of standard deviations to use:
+outliers <- function(x,z){
+  lims <- mean(x) + c(-1, 1) * z * sd(x) # find loadings +/-z sd from mean loading     
+  x[x < lims[1] | x > lims[2]] # locus names in these tails
+}
+
+#Apply function to each significant constrained axis:
+hex_cand1 <- outliers(hex_load.rda[,1],3) # 9
+hex_cand2 <- outliers(hex_load.rda[,2],3) # 6
+hex_cand3 <- outliers(hex_load.rda[,3],3) # 5
+
+hex_ncand <- length(hex_cand1) +  length(hex_cand2) +  length(hex_cand3)
+hex_ncand #20 candidates on axis 1, 2, 3
+
+hex_cand1 <- cbind.data.frame(rep(1,times=length(hex_cand1)), names(hex_cand1), unname(hex_cand1))
+hex_cand2 <- cbind.data.frame(rep(2,times=length(hex_cand2)), names(hex_cand2), unname(hex_cand2))
+hex_cand3 <- cbind.data.frame(rep(3,times=length(hex_cand3)), names(hex_cand3), unname(hex_cand3))
+
+colnames(hex_cand1) <-colnames(hex_cand2) <- colnames(hex_cand3) <- c("axis","snp","loading")
+
+hex_cand <- rbind(hex_cand1, hex_cand2, hex_cand3)
+hex_cand$snp <- as.character(hex_cand$snp)
+
+#Add in the correlations of each candidate SNP with the six environmental predictors
+foo <- matrix(nrow=(hex_ncand), ncol=3)  # 3 columns for 3 predictors
+colnames(foo) <- c("depth","sal_bottom","temp_bottom")
+
+for (i in 1:length(hex_cand$snp)) {
+  nam <- hex_cand[i,2]
+  snp.gen <- geno_hex_40.imp[,nam]
+  foo[i,] <- apply(hex_pred,2,function(x) cor(x,snp.gen))
+}
+
+hex_cand <- cbind.data.frame(hex_cand,foo)  
+head(hex_cand)
+
+#Investigate the candidates
+length(hex_cand$snp[duplicated(hex_cand$snp)]) # 0 duplicate detections
+
+foo <- cbind(hex_cand$axis, duplicated(hex_cand$snp)) 
+table(foo[foo[,1]==1,2]) # no duplicates on axis 1
+table(foo[foo[,1]==2,2]) #  no duplicates on axis 2
+table(foo[foo[,1]==3,2]) # no duplicates on axis 3
+hex_cand <- hex_cand[!duplicated(hex_cand$snp),] # remove duplicate detections if needed
+
+#See which of the predictors each candidate SNP is most strongly correlated with:
+for (i in 1:length(hex_cand$snp)) {
+  bar <- hex_cand[i,]
+  hex_cand[i,7] <- names(which.max(abs(bar[4:6]))) # gives the variable
+  hex_cand[i,8] <- max(abs(bar[4:6]))              # gives the correlation
+}
+
+colnames(hex_cand)[7] <- "predictor"
+colnames(hex_cand)[8] <- "correlation"
+
+table(hex_cand$predictor) 
+
+write.csv(hex_cand, file="hex_cand_outlier.csv")
+```
+

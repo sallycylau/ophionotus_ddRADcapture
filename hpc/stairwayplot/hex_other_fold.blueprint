@@ -1,0 +1,24 @@
+#blueprint file for Ophionotus hexactis rest of locations
+#input setting
+popid: hex_other
+nseq: 40
+L: 345660
+whether_folded: true
+SFS: 	2986.678236075684 1695.897406561125 1041.658244626325 708.6679943826501 527.9722338004196 409.5055709366172 355.2886747003992 321.4618309048415 288.3036675694398 264.2420709633441 238.7838302205606 216.2356280609217 178.5680427430243 131.4927016102698 79.82569741362154 38.98135351633547 14.97887708235508 4.646317500797731 1.101140039967369 0.1838856925802235
+largest_size_of_SFS_bin_used_for_estimation: 20 
+pct_training: 0.67
+nrand: 9	19	28	38
+project_dir: ./ophionotus/analyses/stairwayplot/hex_other
+stairway_plot_dir: ./ophionotus/analyses/stairwayplot/stairway_plot_es
+ninput: 200 
+#random_seed: 6
+#output setting
+mu: 1.43e-8
+year_per_generation: 9
+#plot setting
+plot_title: hex_other_fold
+xrange: 0,0
+yrange: 0,0
+xspacing: 2
+yspacing: 2
+fontsize: 11
