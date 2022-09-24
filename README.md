@@ -26,6 +26,5 @@ This repository contains scripts for the analyses of ddRAD data of Ophionotus vi
 
 #### Download raw data from cloudstor
 
-```bash
-#TBA
-```
+ddRADseq sequences relevant to the ddRAD loci discovery of Antarctic brittle stars Ophionotus victoriae and O. hexactis are deposited in the SRA BioProject PRJNA882200. Raw sequences relevant to the target capture sequencing of ddRAD loci in O. victoriae and O. hexactis are deposited in the SRA BioProject PRJNA883508.
+
