@@ -1,14 +1,14 @@
 #blueprint file for Ophionotus victoriae deep
 #input setting
 popid: vic_deep
-nseq: 18
-L: 277760
+nseq: 16
+L: 1135820
 whether_folded: true
-SFS: 	2010.67479889075 884.8176568076246 524.1361559888038 361.6988622212846 267.1646631376399 186.9292464340453 114.1754207351595 55.45487861514302 18.08003379767789
+SFS: 	170.9599644139207 175.386393104459 141.9230421791985 110.7023995620625 89.74827013792023 68.42834369785689 41.22226129251874 17.75732245507953
 smallest_size_of_SFS_bin_used_for_estimation: 1
-largest_size_of_SFS_bin_used_for_estimation: 9
+largest_size_of_SFS_bin_used_for_estimation: 8
 pct_training: 0.67
-nrand: 4	8	12	16
+nrand: 3	7	12	14
 project_dir: ./ophionotus/analyses/stairwayplot/vic_deep
 stairway_plot_dir: ./ophionotus/analyses/stairwayplot/stairway_plot_es
 ninput: 200 

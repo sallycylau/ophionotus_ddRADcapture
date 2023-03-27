@@ -6,7 +6,7 @@ output: github_document
 Trim adapters:
 ```{bash, error=TRUE, results='hide', eval = FALSE}
 #create a txt file containing barcodes information:
-nano barcodes.txt
+nano barcodes.txt (in ./hpc/processshortreads)
 
 AAGTAAGT GAACCGGT WAMZ88586
 TGTTCTCC TGGTACTA WAMZ88587
@@ -16,7 +16,7 @@ module load stacks
 
 in_path=./ophionotus/raw
 out_dir=./ophionotus/cleaned_processshortreads
-bar_code=./ophionotus/info/barcodes_1.txt
+bar_code=./ophionotus/info/barcodes.txt
 log_file=$out_dir/process_shortreads.oe
 
 process_shortreads -P -p $in_path -o $out_dir -b $bar_code -r -c --index_index --adapter_1 AGATCGGAAGAGC --adapter_2 AGATCGGAAGAGC --adapter_mm 0 &> $log_file

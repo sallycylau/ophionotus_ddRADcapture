@@ -139,3 +139,56 @@ cd ./ophionotus/SNPfiltering/filtering3/demographic/9_max_obs_het07
 
 vcftools --vcf ./maf007_setID.vcf --exclude site_obs_het_over_07.tsv --out max_het07.vcf --recode --recode-INFO-all
 ```
+
+Genotype likeligood estimations for SFS-based analyses (stairwayplot)
+```{bash, error=TRUE, results='hide'}
+
+##O. hexactis from Brnasfield Mouth
+cd ./angsd_stairway/hex_BM
+
+BAMlist=./angsd_stairway/hex_BM.filelist
+refloci=./unique_consensus_samtools_fadix/BrittleStar-input-seq-final.fas
+
+singularity run $SING/angsd-0.940.sif angsd -bam $BAMlist -ref $refloci \
+        -uniqueOnly 1 -remove_bads 1 -skipTriallelic 1 -doMajorMinor 1 -trim 5 -C 50 -baq 1 \
+        -minMapQ 30 -minQ 20 -minInd 10 -setMinDepthInd 3 -doCounts 1 -doHWE 1 -maxHetFreq 0.8 \
+	    -doSaf 1 -out hex -anc $refloci -GL 1 -P 1
+
+#do not fold in AGNSD, fold using dadi instead! 
+singularity run $SING/angsd-0.940.sif realSFS hex.saf.idx > hex_BM.sfs
+
+#add header - 21 unfolded "BM" - to the first line of hex_BM.sfs. 21 = 2N+1
+sed '1s/^/21 unfolded "BM" \n/' hex_BM.sfs > hex_BM_header.sfs
+
+#fold SFS in dadi then export final folded SFS for staitway plot
+ipython
+
+import dadi
+import pylab
+
+fs = dadi.Spectrum.from_file("./hex_BM_header.sfs")
+folded = fs.fold()
+data = folded.project([14])
+dadi.Plotting.plot_1d_fs(data, show=True)
+data.to_file('dadi_hex_BM.sfs')
+
+
+##O. hexactis from other Antarctic islands
+Did this in cd ./angsd_sfs/hex (03.Target_capture_SNPfiltering_dataset1.md) see L200
+
+#add header - 61 unfolded "other" - to the first line of hex_rmBM_unfolded.sfs. 61 = 2N+1
+sed '1s/^/61 unfolded "other"\n/' hex_rmBM_unfolded.sfs > hex_rmBM_unfolded_header.sfs
+
+
+#fold SFS in dadi then export final folded SFS for staitway plot
+ipython
+
+import dadi
+import pylab
+
+fs = dadi.Spectrum.from_file("./hex_rmBM_unfolded_header.sfs")
+folded = fs.fold()
+data = folded.project([40])
+dadi.Plotting.plot_1d_fs(data, show=True)
+data.to_file('dadi_hex_other.sfs')
+```

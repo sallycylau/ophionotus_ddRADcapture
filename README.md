@@ -1,8 +1,8 @@
-## Evolutionary divergence and innovations driven by a historical warm interglacial: genomic insights from Antarctic brittle stars 
+## Genomic insights of evolutionary divergence and innovations driven in Antarctic brittle stars 
 
 > Publication info TBA
 
-This repository contains scripts for the analyses of ddRAD data of Ophionotus victoriae and O. hexactis sequenced with a target capture method.
+This repository contains scripts for the analyses of ddRAD loci of Ophionotus victoriae and O. hexactis sequenced with a target capture method.
 
 #### Project outline
 
@@ -22,10 +22,8 @@ This repository contains scripts for the analyses of ddRAD data of Ophionotus vi
 - [Outlier loci detection (PCAdapt)](07.Analyse_outlierloci_pcadapt.md)  
 - [Outlier loci detection (PCAdapt)](07.Analyse_outlierloci_pcadapt.md)  
 - [Population size changes over time (StairwayPlot)](08.Analyse_stairwayplot.md)  
-- [Demographic modelling (Dadi)](09.Analyse_dadi.md)  
+- [Demographic modelling (dadi)](09.Analyse_dadi.md)  
 
-#### Download raw data from cloudstor
+#### Download raw data from NCBI
 
-```bash
-#TBA
-```
+ddRADseq sequences relevant to the ddRAD loci discovery of Antarctic brittle stars Ophionotus victoriae and O. hexactis are deposited in the SRA BioProject PRJNA882200. Raw sequences relevant to the target capture sequencing of ddRAD loci in O. victoriae and O. hexactis are deposited in the SRA BioProject PRJNA883508.

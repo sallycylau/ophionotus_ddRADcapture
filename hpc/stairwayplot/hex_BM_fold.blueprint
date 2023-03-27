@@ -1,25 +1,25 @@
 #blueprint file for Ophionotus hexactis BM
 #input setting
-popid: hex_BM
-nseq: 14
-L: 345660
-whether_folded: true
-SFS: 	2600.698993808063 1276.458488132103 784.3659270725855 525.3555899552813 307.1388028895777 173.4975232198141 54.27182662538704
+popid: hex_BM 
+nseq: 12 
+L: 1135820 
+whether_folded: true 
+SFS: 65.40707888831301 79.60837483999019 81.12590231594464 62.63828151075876 37.06308454662035 14.06142725603715 
 smallest_size_of_SFS_bin_used_for_estimation: 1 
-largest_size_of_SFS_bin_used_for_estimation: 7 
-pct_training: 0.67
-nrand: 3	6	9	12
+largest_size_of_SFS_bin_used_for_estimation: 6
+pct_training: 0.67 
+nrand: 2	5	9	10 
 project_dir: ./ophionotus/analyses/stairwayplot/hex_BM 
-stairway_plot_dir: ./ophionotus/analyses/stairwayplot/stairway_plot_es
-ninput: 200
+stairway_plot_dir: ./ophionotus/analyses/stairwayplot/stairway_plot_es 
+ninput: 200 
 #random_seed: 6
 #output setting
-mu: 1.43e-8
-year_per_generation: 9 
+mu: 1.43e-8 #
+year_per_generation: 9
 #plot setting
-plot_title: hex_BM_fold # title of the plot
-xrange: 0,0
-yrange: 0,0
+plot_title: hex_BM_fold 
+xrange: 0,0 
+yrange: 0,0 
 xspacing: 2
 yspacing: 2
 fontsize: 11
