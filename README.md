@@ -1,6 +1,6 @@
-## Genomic insights of evolutionary divergence and innovations driven in Antarctic brittle stars 
+## Genomic insights of evolutionary divergence and life histories innovations in Antarctic brittle stars
 
-> Publication info TBA
+> Lau et al. (2023) Molecular Ecology https://doi.org/10.1111/mec.16951
 
 This repository contains scripts for the analyses of ddRAD loci of Ophionotus victoriae and O. hexactis sequenced with a target capture method.
 
